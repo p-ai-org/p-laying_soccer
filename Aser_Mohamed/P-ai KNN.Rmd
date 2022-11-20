@@ -5,6 +5,21 @@ date: "2022-11-20"
 ---
 
 ```{r}
+install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg"))
+```
+
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(broom)
+library(AICcmodavg)
+library(caret)
+library(class)
+```
+
+
+```{r}
 data <- read.csv("finalfeatures.csv")
 ```
 
