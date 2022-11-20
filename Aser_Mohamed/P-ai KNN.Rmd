@@ -5,7 +5,7 @@ date: "2022-11-20"
 ---
 
 ```{r}
-install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg"))
+install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg", "caret", "class"))
 ```
 
 ```{r}
