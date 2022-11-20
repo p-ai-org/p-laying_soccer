@@ -1,0 +1,106 @@
+---
+title: "K-NN"
+output: html_document
+date: "2022-11-20"
+---
+
+```{r}
+data <- read.csv("finalfeatures.csv")
+```
+
+```{r}
+data
+```
+
+```{r}
+data[is.na(data)] = 50
+```
+
+```{r}
+P_value <- c()
+for(i in 6:30){
+one.way <- aov( data[,i] ~ as.factor(outcome), data = data)
+
+summary(one.way)
+P_value [i-5] <- summary(one.way)[[1]][["Pr(>F)"]][1]
+}
+selectedIndices <- 5 + which(P_value < 0.01)
+plot(P_value ) 
+abline(h = 0.05, col = "red")
+```
+
+```{r}
+selectedIndices
+```
+
+```{r}
+data[, selectedIndices]
+```
+```{r}
+#set.seed(1)
+accuracyData <- c()
+bestK <- c()
+for(j in 1:1000)
+{
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+data_train <- data[sample,] 
+#data_train
+data_test <- data[!sample, ]
+#data_test
+#set.seed(122)
+ACCURACY <- c()
+
+for(i in 1: 32)
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, 5], k= i)
+ACC <- 100 * sum(data_test[, 5]== knn)/NROW(data_test[, 5])
+ACC
+ACCURACY[i] <- ACC;
+}
+
+
+accuracyData[j] <- max(ACCURACY)
+bestK[j] <- which.max(ACCURACY)
+}
+
+summary(accuracyData)
+summary(bestK)
+```
+
+The above features include the score, which doesn't make any sense. So, I will remvoe the score feature and try again.
+
+```{r}
+#set.seed(1)
+selectedIndiceswithoutscore <-c(8, 10, 15, 21, 26)
+accuracyData <- c()
+bestK <- c()
+for(j in 1:1000)
+{
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+data_train <- data[sample,] 
+#data_train
+data_test <- data[!sample, ]
+#data_test
+#set.seed(122)
+ACCURACY <- c()
+
+for(i in 1: 33)
+{
+knn <- class::knn(train= data_train[, selectedIndiceswithoutscore], test = data_test[, selectedIndiceswithoutscore], cl= data_train[, 5], k= i)
+ACC <- 100 * sum(data_test[, 5]== knn)/NROW(data_test[, 5])
+ACC
+ACCURACY[i] <- ACC;
+}
+
+
+accuracyData[j] <- max(ACCURACY)
+bestK[j] <- which.max(ACCURACY)
+}
+
+
+accuracyData
+summary(accuracyData)
+bestK
+summary(bestK)
+```
+
