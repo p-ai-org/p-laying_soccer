@@ -13,36 +13,36 @@ data
 ```
 
 ```{r}
-data[is.na(data)] = 50
+data[is.na(data)] = 50 # The only NA values are in the previous_win_percentage column because it calculates the win percentage of previous matches; it's NA for the first match for every team beacuse there are no mathces before first match for each team. So, I changed it to 50 percent whenever it's NA.
 ```
 
 ```{r}
-P_value <- c()
+P_value <- c() # will save the p-value of each test
 for(i in 6:30){
-one.way <- aov( data[,i] ~ as.factor(outcome), data = data)
-
-summary(one.way)
-P_value [i-5] <- summary(one.way)[[1]][["Pr(>F)"]][1]
+  #6:30 are the indices of the columns in my dataset that I wanted to check whether they are relevant features or not.
+one.way <- aov( data[,i] ~ as.factor(outcome), data = data) # this is the test
+summary(one.way) #the result of the test
+P_value [i-5] <- summary(one.way)[[1]][["Pr(>F)"]][1] # I save the p-value of each column in the p-value vector. the (i-5) index is just to avoid NAs
 }
-selectedIndices <- 5 + which(P_value < 0.01)
-plot(P_value ) 
+selectedIndices <- 5 + which(P_value < 0.01) #those are the indices of the features with p-value less than 0.01. Usually, 0.05 is the cutoff, but to find even better features, I made the cutoff less than 0.01. Tweak the cutoff as you want.
+plot(P_value ) #just a visualization 
 abline(h = 0.05, col = "red")
 ```
 
 ```{r}
-selectedIndices
+selectedIndices # these are the indices of the columns we will use as relevant features.
 ```
 
 ```{r}
-data[, selectedIndices]
+data[, selectedIndices] # those are the columns we will use as relevant features
 ```
 ```{r}
 #set.seed(1)
 accuracyData <- c()
 bestK <- c()
-for(j in 1:1000)
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with various datasets
 {
-sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
+sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3)) #sampling the training and the test data
 data_train <- data[sample,] 
 #data_train
 data_test <- data[!sample, ]
@@ -50,21 +50,21 @@ data_test <- data[!sample, ]
 #set.seed(122)
 ACCURACY <- c()
 
-for(i in 1: 32)
+for(i in 1: 32) # 1:32 are the possible values for the K
 {
 knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, 5], k= i)
-ACC <- 100 * sum(data_test[, 5]== knn)/NROW(data_test[, 5])
+ACC <- 100 * sum(data_test[, 5]== knn)/NROW(data_test[, 5]) # calculates the accuracy of the model
 ACC
 ACCURACY[i] <- ACC;
 }
 
 
-accuracyData[j] <- max(ACCURACY)
-bestK[j] <- which.max(ACCURACY)
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
 }
 
-summary(accuracyData)
-summary(bestK)
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summarry of the k at which the model acheives its best accuracy
 ```
 
 The above features include the score, which doesn't make any sense. So, I will remvoe the score feature and try again.
