@@ -1,0 +1,124 @@
+---
+title: "project"
+author: "Sophia Huang"
+date: "10/30/2022"
+output: html_document
+---
+```{r}
+library(SBpitch)
+library(tidyverse)
+library(StatsBombR)
+```
+
+```{r}
+Comp <- FreeCompetitions()
+```
+
+
+```{r, warning= FALSE}
+fc <- FreeCompetitions()
+euro2020 <- fc%>%
+  filter(competition_id == 55)
+```
+
+```{r, warning=FALSE}
+euro2022 <- fc %>%
+  filter(competition_id == 53)
+
+euro2022matches <- FreeMatches(euro2022)
+
+euro2022data <- free_allevents(MatchesDF = euro2022matches, Parallel = T)
+```
+
+```{r}
+euro2022data
+```
+
+```{r}
+euro2022matchesdata <- left_join(euro2022data, euro2022matches, by = "match_id")
+
+euro2022matchesdata
+euro2022matchesdata %>% select((goalkeeper.technique.name)) %>% filter(!is.na(goalkeeper.technique.name))
+```
+
+```{r}
+euro2022matchesdata %>% select(match_id, team.name, home_team.home_team_name, away_team.away_team_name, home_score, away_score, possession_team.name, pass.technique.name) %>%  filter(!is.na(pass.technique.name)) %>% group_by(match_id, team.name) %>% summarize(numthroughballs = sum(pass.technique.name == "Through Ball"))
+```
+
+
+```{r}
+
+firstfive <- euro2022matchesdata %>% select(match_id,team.id, team.name, home_team.home_team_name, away_team.away_team_name, home_score, away_score, possession_team.name, pass.deflected, goalkeeper.technique.name, pass.technique.name, pass.miscommunication) %>% filter(!is.na(pass.technique.name)) %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) 
+firstfive
+
+firstfive1 <- euro2022matchesdata %>% select(match_id, team.id, team.name, home_team.home_team_name, away_team.away_team_name, home_score, away_score, possession_team.name, pass.deflected, goalkeeper.technique.name, pass.technique.name, pass.miscommunication) %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>%
+  summarize(
+            percentpassmiscom = sum(!is.na(pass.miscommunication))/((sum(is.na(pass.miscommunication))+sum(!is.na(pass.miscommunication))))*100, standing_diving = sum(goalkeeper.technique.name == "Standing", na.rm = TRUE)-sum(goalkeeper.technique.name=="Diving", na.rm=TRUE)) 
+
+firstfive1
+
+```
+
+
+
+```{r}
+df <- euro2022matchesdata %>% select(match_id,team.name, home_team.home_team_name, away_team.away_team_name, home_score, away_score, possession_team.name, pass.height.name,substitution.outcome.name,shot.first_time,clearance.head, pass.shot_assist) 
+```
+
+```{r}
+passheight <- df%>% filter(!is.na(pass.height.name)) %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>%
+  summarize(percenthighpass = sum((pass.height.name=="High Pass"))/sum(!is.na(pass.height.name))) 
+      
+passheight
+```
+
+```{r}
+suboutcome <- df %>% filter(!is.na(substitution.outcome.name)) %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>%
+  summarize(numsubs = sum(!is.na(substitution.outcome.name))) 
+
+suboutcome
+```
+
+
+
+
+```{r number shots first time}
+
+firsttime <- df %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>% summarise(percentfirsttime = sum (!is.na(shot.first_time))/((sum(is.na(shot.first_time))+sum(!is.na(shot.first_time))))*100) 
+firsttime
+```
+
+
+
+```{r %headers}
+ headclearance <- df %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>% summarise(percenthead = sum (!is.na(clearance.head))/((sum(is.na(clearance.head))+sum(!is.na(clearance.head))))*100) 
+
+headclearance
+```
+
+```{r num assists}
+shotassist<-df %>% 
+  mutate(teampossession = ifelse(home_team.home_team_name == possession_team.name, "HOME", "AWAY"), winner = ifelse(home_score>away_score, home_team.home_team_name, away_team.away_team_name)) %>% mutate(outcome = ifelse(winner == team.name, "Win", "Loss")) %>% group_by(match_id, team.name, outcome) %>% summarise(numshotassist = sum(!is.na(pass.shot_assist)))
+
+shotassist
+```
+
+
+```{r}
+joinedtibbles <- 
+  firsttime %>%
+  left_join(headclearance, by = c("match_id", "team.name", "outcome")) %>%
+  left_join(shotassist, by = c("match_id", "team.name", "outcome")) %>%
+  left_join(firstfive1, by = c("match_id", "team.name", "outcome"))
+joinedtibbles
+
+write.csv(joinedtibbles, "finaltotalfeatures.csv")
+
+``` 
+
