@@ -36,9 +36,6 @@ euro2022matches <- FreeMatches(euro2022)
 euro2022data <- free_allevents(MatchesDF = euro2022matches, Parallel = T)
 ```
 
-```{r}
-colnames(euro2022data)
-```
 
 ```{r}
 nrow(table(euro2022data$match_id))

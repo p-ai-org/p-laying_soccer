@@ -1,0 +1,23 @@
+
+
+```{r}
+features <- read.csv("combinedfeatures.csv")
+```
+
+```{r}
+writeClipboard(colnames(features))
+```
+
+```{r}
+raw.variables <- read.csv("RawVariables.csv")$x
+```
+
+```{r}
+writeClipboard(raw.variables)
+```
+
+
+
+
+
+
