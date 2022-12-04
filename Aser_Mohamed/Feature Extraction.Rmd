@@ -1,0 +1,202 @@
+---
+title: "Untitled"
+author: "Aser Atawya"
+date: "2022-10-23"
+output: html_document
+---
+
+```{r}
+install.packages("devtools")
+library(devtools)
+install.packages("remotes")
+library(remotes)
+remotes::install_version("SDMTools", "1.1-221")
+devtools::install_github("statsbomb/StatsBombR")
+```
+
+```{r}
+library("StatsBombR")
+library("tidyverse")
+```
+
+
+```{r}
+fc <- FreeCompetitions()
+euro2022 <- fc %>% filter(competition_id == 53)
+euro2022matches <- FreeMatches(euro2022)
+euro2022data <- free_allevents(MatchesDF = euro2022matches, Parallel = T)
+matchid <- unique(euro2022data$match_id) #extracting matches 
+```
+
+```{r}
+outcome <- euro2022matches %>% select(home_score, home_team.home_team_id, away_score, away_team.away_team_id,  match_id) %>% mutate(outcome =ifelse(home_score > away_score, "Win", ifelse(home_score == away_score, "Draw", "Lose"))  ) #extractes the outcome of every match
+```
+
+
+
+```{r}
+euro_match <-  euro2022data %>% filter(!is.na(shot.outcome.name), match_id == matchid[1]) #extracts the shots of the first match
+match_teamIDs <-  unique(euro_match$possession_team.id) #finds the ID of the home and away teams
+home_team_id <- match_teamIDs[1] 
+away_team_id <- match_teamIDs[2]
+
+euro_match_home <- euro_match %>% filter (team.id == home_team_id)
+match_shot_outcome_home <- euro_match_home$shot.outcome.name #the shots of the home team 
+
+euro_match_away <- euro_match %>% filter (team.id == away_team_id)
+match_shot_outcome_away <- euro_match_away$shot.outcome.name # the shots of the away team
+
+euro_match_dribble <-  euro2022data %>% filter(type.name == "Dribble", match_id == matchid[1])
+competition_dribble_home <- euro_match_dribble %>% filter (team.id == home_team_id) %>% nrow() # count of the dribbles of the home team
+competition_dribble_away <- euro_match_dribble %>% filter (team.id == away_team_id) %>% nrow() #count of the dribbles of the away team
+
+competition_home_shots <- table(match_shot_outcome_home) %>% as_tibble() %>% mutate(matchid = matchid[1]) %>% pivot_wider(names_from = matchid, values_from = n) #saves the shots in a table and adds the match_id
+competition_away_shots <- table(match_shot_outcome_away) %>% as_tibble() %>% mutate(matchid = matchid[1]) %>% pivot_wider(names_from = matchid, values_from = n)  #saves the shots in a table and adds the match_id
+
+
+for( j in 2:length(matchid)) # repeats the same process for the rest of the matches; had to start from the second match because merging the tibbles as below will require an intial tibble
+{
+euro_match <-  euro2022data %>% filter(!is.na(shot.outcome.name), match_id == matchid[j]) #extracts the shots of the match
+match_teamIDs <-  unique(euro_match$possession_team.id) #finds the ID of the home and away teams
+home_team_id <- match_teamIDs[1]
+away_team_id <- match_teamIDs[2]
+
+euro_match_home <- euro_match %>% filter (team.id == home_team_id)
+match_shot_outcome_home <- euro_match_home$shot.outcome.name #extracts shots of the home team
+
+euro_match_away <- euro_match %>% filter (team.id == away_team_id)
+match_shot_outcome_away <- euro_match_away$shot.outcome.name #extracts shots of the away team
+
+euro_match_dribble <-  euro2022data %>% filter(type.name == "Dribble", match_id == matchid[j]) # extracts the dribbles of the match
+match_home_dribble <- euro_match_dribble %>% filter (team.id == home_team_id) %>% nrow()  #count of the dribbles of the home team
+match_away_dribble <- euro_match_dribble %>% filter (team.id == away_team_id) %>% nrow() #count of the dribbles of the away team
+competition_dribble_home <- c(competition_dribble_home, match_home_dribble)  #stores of the dribbles of the home team for all home teams
+competition_dribble_away <- c(competition_dribble_away, match_away_dribble)  #stores of the dribbles of the home team for all away teams
+
+match_home_shots <- table(match_shot_outcome_home) %>% as_tibble() %>% mutate(matchid = matchid[j]) %>% pivot_wider(names_from = matchid, values_from = n)  #saves the home team shots in a table and adds the match_id
+match_away_shots <- table(match_shot_outcome_away) %>% as_tibble() %>% mutate(matchid = matchid[j]) %>% pivot_wider(names_from = matchid, values_from = n) #saves the away team shots in a table and adds the match_id
+
+competition_home_shots <- full_join(match_home_shots, competition_home_shots, by = "match_shot_outcome_home") #saves the shots of all home teams in the competition 
+competition_away_shots <- full_join(match_away_shots, competition_away_shots, by = "match_shot_outcome_away") #saves the shots of all away teams in the competition 
+}
+```
+
+```{r}
+header.true <- function(df) {
+  names(df) <- as.character(unlist(df[1,])) #function that removes the header(first row)
+  df[-1,]
+}
+
+competition_home_shots_cleaned <- as.data.frame(t(competition_home_shots))  %>% replace(is.na(.), 0) %>% header.true() %>% mutate(count_dribbles = 0) #replaces NAs with 0, removes the added header, and adds a new column count_dribbles as a place holder
+competition_home_shots_cleaned$count_dribbles <- competition_dribble_home #adds home team dribbles to the dataset
+
+competition_away_shots_cleaned <- as.data.frame(t(competition_away_shots))  %>% replace(is.na(.), 0) %>% header.true() %>% mutate(count_dribbles = 0) #replaces NAs with 0, removes the added header, and adds a new column count_dribbles as a place holder
+competition_away_shots_cleaned$count_dribbles <- competition_dribble_away #adds away team dribbles to the dataset
+```
+
+```{r}
+home_shots <-tibble::rownames_to_column(competition_home_shots_cleaned, "match_id") %>% lapply(as.integer) %>% as.data.frame() %>% mutate(Total_shots = rowSums(.)-match_id-count_dribbles) #changes data type to integer and changes the format to data frame and adds total shots
+away_shots <- tibble::rownames_to_column(competition_away_shots_cleaned, "match_id") %>% lapply(as.integer) %>% as.data.frame() %>% mutate(Total_shots = rowSums(.)-match_id-count_dribbles)#changes data type to integer and changes the format to data frame and adds total shots
+```
+
+```{r}
+home_on_target_percentage <- home_shots %>% mutate(Percent_of_On_Target_Shots = (Total_shots - Wayward - Off.T - Blocked) /Total_shots) #calculates percentage of on-target shots
+away_on_target_percentage <- away_shots %>% mutate(Percent_of_On_Target_Shots = (Total_shots - Wayward - Off.T - Blocked) /Total_shots) #calculates percentage of on-target shots
+```
+
+
+```{r}
+match_home <- full_join(outcome, home_on_target_percentage, by = "match_id") %>% mutate(Team_id = home_team.home_team_id, score = home_score) %>% select(match_id, Team_id, Percent_of_On_Target_Shots, Total_shots, count_dribbles, score, outcome) #joins the outcome of every home team with the features: total shots, percentage of on target shots, and count dribbles
+
+match_away <- full_join(outcome, away_on_target_percentage, by = "match_id") %>% mutate(Team_id = away_team.away_team_id, score = away_score) %>% select(match_id, Team_id, Percent_of_On_Target_Shots, Total_shots, count_dribbles, score, outcome) #joins the outcome of every away team with the features: total shots, percentage of on target shots, and count dribbles
+
+home_and_away_shots <- rbind(match_away, match_home) %>% arrange(match_id) %>% mutate(Ratio_of_Shots = 0) # joins the two tibbles together and makes a place for another feature, which is ratio of shots
+
+shot_ratio <- c()
+for( i in 1: (nrow(home_and_away_shots)/2))
+{
+  j <- 2*i - 1
+  shot_ratio[j] <- home_and_away_shots$Total_shots[j]/home_and_away_shots$Total_shots[j+1] # ratio of shots of the first team to that of the second team
+  shot_ratio[j+1] <- 1/shot_ratio[j] #the ratio of shots of the away team to that of the home team is the reciprocal to the ratio of shots of the home team to that of the away team
+}
+home_and_away_shots$Ratio_of_Shots <- shot_ratio #adds the ratio of shots to the data
+```
+
+
+```{r}
+matches <- euro2022matches
+
+# The purpose of this code is to count the previous matches win percentage for each team at every match. That is what percent of previous matches in the tournament did the team win.
+# the outcome is a table that includes a row for each match and in each row is the match id, team id, and the win percentage for the team.
+matchestable <- c()
+teamname <- c()
+winpercent <- c()
+ 
+z=1 #arbitrary counter to be able to place data appropriately in our desired table
+ 
+#loop over all matches
+ 
+for (i in 1:length(matches))
+{
+ 
+  winH = 0 # counter for wins of the Home side before the match we are at
+  winA = 0 # counter for wins of the Away side before the match we are at
+  thismatch = matches[i,] # define thismatch to include the data associated with one match
+  thismatchdate = as.Date(thismatch$match_date)  # save match date as date datatype to be able to compare dates using > and <
+ 
+  # We start by considering the home team
+ 
+  matchestable[z] = thismatch$match_id # add match id to matches column
+  teamname[z] = thismatch$home_team.home_team_id # add home team id to teams column
+ 
+  previousmatchesHome = matches %>% filter(home_team.home_team_name == thismatch$home_team.home_team_name | away_team.away_team_name == thismatch$home_team.home_team_name, as.Date(match_date) < thismatchdate) # all previous matches for the home team we are considering
+ 
+  # this loop counts how many wins the home team had in the tournament before thismatch
+  for (j in 1:nrow(previousmatchesHome))
+  {
+    if(nrow(previousmatchesHome)==0){break}
+ 
+    if(previousmatchesHome[j,]$home_score > previousmatchesHome[j,]$away_score){
+        winH = winH +1 
+      }
+ 
+  }
+ 
+  percentagewin = (winH/nrow(previousmatchesHome))*100 # calculate the percent of previous matches that the home team of thismatch won
+  winpercent[z]=percentagewin # add percentage win to our table
+ 
+  # Now consider the away team
+ 
+  z=z+1 # move one row down in the final table
+ 
+  matchestable[z] = thismatch$match_id # add match id to matches column
+  teamname[z] = thismatch$away_team.away_team_id # add away team id to teams column
+ 
+  previousmatchesAway = matches %>% filter(away_team.away_team_name == thismatch$away_team.away_team_name | home_team.home_team_name == thismatch$away_team.away_team_name, as.Date(match_date) < thismatchdate) # all previous matches for the away team we are considering
+ 
+  # this loop counts how many wins the away team had in the tournament before thismatch
+  for (j in 1:nrow(previousmatchesAway))
+  {
+    if(nrow(previousmatchesAway)==0){break}
+ 
+    if(previousmatchesAway[j,]$home_score < previousmatchesAway[j,]$away_score){
+        winA = winA +1
+      }
+  }
+ 
+  percentagewin = (winA/nrow(previousmatchesAway))*100 # calculate the percent of previous matches that the away team of thismatch won
+  winpercent[z]=percentagewin  # add percentage win to our table
+ 
+  z=z+1 # move one row down in the final table
+ 
+}
+ 
+winpercentTable = cbind(matchestable,teamname,winpercent) %>% as_tibble() %>% filter(!is.na(matchestable)) # put together all columns to form our final table.
+winpercentTable <- winpercentTable %>% lapply(as.integer) %>% as.tibble() %>% rename(match_id = matchestable, Team_id = teamname, Previous_matches_win_percentage = winpercent) # change datatype to int.
+winpercentTable
+```
+
+```{r}
+Features <- full_join (home_and_away_shots,  winpercentTable, by = c("match_id", "Team_id") ) %>% select(match_id, Team_id, Percent_of_On_Target_Shots, Previous_matches_win_percentage, Ratio_of_Shots, Total_shots, count_dribbles, score, outcome) #join all the features together
+Features
+```
