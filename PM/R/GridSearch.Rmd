@@ -16,6 +16,13 @@ colnames(features)
 data <- f %>% select(c("team_id","team.name","away_team_name","outcome","percentfirsttime","percentshotassist","duration_perc","num_crosses","Total_shots","Ratio_of_Shots"))
 ```
 
+```{r}
+
+```
+
+
+
+
 
 
 
