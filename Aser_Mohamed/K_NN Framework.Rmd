@@ -22,13 +22,13 @@ library(class)
 ```{r}
 #round one to predict round two
 data_train1 <- read.csv("roundone.csv") #read the previous round
-data_train1 <- data_train[,-1] #just removes the automatic counter of rows
+data_train1 <- data_train1[,-1] #just removes the automatic counter of rows
 
 data_test2  <- read.csv("roundtwo.csv") #reads predicitons file (Here put the new data with the predictions)
-data_test2  <- data_test[, -1] #just removes the automatic counter of rows
+data_test2  <- data_test2[, -1] #just removes the automatic counter of rows
 
 data_validation2 <- read.csv("roundtwo.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
-data_validation2 <- data_validation[, -1] #just removes the autmoatic counter of rows
+data_validation2 <- data_validation2[, -1] #just removes the autmoatic counter of rows
 ```
 
 
@@ -36,13 +36,13 @@ data_validation2 <- data_validation[, -1] #just removes the autmoatic counter of
 ```{r}
 #round two to predict round three
 data_train2 <- read.csv("roundtwo.csv") #read the previous round
-data_train2 <- data_train[,-1]
+data_train2 <- data_train2[,-1]
 
 data_test3  <- read.csv("roundthree.csv") #reads predicitons file (Here put the new data with the predictions)
-data_test3  <- data_test[, -1]
+data_test3  <- data_test3[, -1]
 
 data_validation3 <- read.csv("roundthree.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
-data_validation3 <- data_validation[, -1]
+data_validation3 <- data_validation3[, -1]
 ```
 
 
@@ -50,13 +50,13 @@ data_validation3 <- data_validation[, -1]
 ```{r}
 # round three to predict round four
 data_train3 <- read.csv("roundthree.csv") #read the previous round
-data_train3 <- data_train[,-1]
+data_train3 <- data_train3[,-1]
 
 data_test4  <- read.csv("roundfour.csv") #reads predicitons file (Here put the new data with the predictions)
-data_test4  <- data_test[, -1]
+data_test4  <- data_test4[, -1]
 
 data_validation4 <- read.csv("roundfour.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
-data_validation4 <- data_validation[, -1]
+data_validation4 <- data_validation4[, -1]
 ```
 
 
@@ -65,13 +65,13 @@ data_validation4 <- data_validation[, -1]
 ```{r}
 ## round four to predict round five
 data_train4 <- read.csv("roundfour.csv") #read the previous round
-data_train4 <- data_train[,-1]
+data_train4 <- data_train4[,-1]
 
 data_test5  <- read.csv("roundfive.csv") #reads predicitons file (Here put the new data with the predictions) 
-data_test5  <- data_test[, -1]
+data_test5  <- data_test5[, -1]
 
 data_validation5 <- read.csv("roundfive.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
-data_validation5 <- data_validation[, -1]
+data_validation5 <- data_validation5[, -1]
 ```
 
 
