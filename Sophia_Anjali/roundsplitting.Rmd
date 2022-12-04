@@ -1,0 +1,191 @@
+---
+title: "roundsplitting"
+author: "Sophia Huang"
+date: "12/4/2022"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(randomForest)
+library(caTools)
+library(tidymodels)
+library(ranger)
+library(vip)
+```
+
+```{r}
+updated <- read_csv("updatedfinalfeatures.csv") %>% select(team_id:outcome, percentfirsttime, duration_perc, num_crosses, Total_shots, Ratio_of_Shots, percentshotassist) %>% mutate(numshotassist = percentshotassist) %>% select(-percentshotassist)
+updated
+```
+# FIRST ROUNd
+```{r}
+roundone <- updated %>% head(16)
+write.csv(roundone, "roundone.csv")
+```
+
+```{r}
+roundtwo <- updated %>% head(32)
+roundtwo
+write.csv(roundtwo, "roundtwo.csv")
+```
+```{r}
+roundthree <- updated %>% head(48)
+roundthree
+write.csv(roundthree, "roundthree.csv")
+```
+
+```{r}
+roundfour <- updated %>% head(56)
+roundfour
+write.csv(roundfour, "roundfour.csv")
+```
+```{r}
+roundfive <- updated %>% head(60)
+roundfive
+write.csv(roundfive, "roundfive.csv")
+```
+```{r}
+roundfive
+```
+```{r}
+euro22
+roundfive
+```
+
+
+```{r}
+euro22 <- roundfive %>% mutate(first_touch_shot = percentfirsttime, possession = duration_perc, crosses = num_crosses, shots = Total_shots, ratio_shots = Ratio_of_Shots, passassist = numshotassist)  
+
+euro22<-euro22 %>% select (outcome, first_touch_shot:passassist) %>% mutate(outcome = ifelse(outcome == "Win", 1, 0))
+euro22
+
+# partition
+set.seed(47)
+euro22_split <- initial_split(euro22)
+euro22_train <- training(euro22_split)
+euro22_test <- testing(euro22_split)
+
+# recipe
+euro22_rf_recipe <-
+  recipe(outcome ~ . ,
+         data = euro22_train) %>%
+  step_mutate(outcome = as.factor(outcome)) 
+
+#model
+euro22_rf <- rand_forest(mtry = tune(),
+                           trees = tune()) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("classification")
+
+# workflow
+euro22_rf_wflow <- workflow() %>%
+  add_model(euro22_rf) %>%
+  add_recipe(euro22_rf_recipe)
+
+# CV
+set.seed(234)
+euro22_folds <- vfold_cv(euro22_train,
+                          v = 4)
+
+# parameters
+euro22_grid <- grid_regular(mtry(range = c(2,7)),
+                             trees(range = c(1,500)),
+                             levels = 5)
+
+# tune
+euro22_rf_tune <- 
+  euro22_rf_wflow %>%
+  tune_grid(resamples = euro22_folds,
+            grid = euro22_grid)
+
+euro22_rf_best <- finalize_model(euro22_rf, select_best(euro22_rf_tune, "accuracy"))
+
+euro22_rf_tune %>%
+  collect_metrics() %>%
+  filter(.metric == "accuracy") %>%
+  ggplot() + 
+  geom_line(aes(x = trees, y = mean, color = as.factor(mtry)))
+
+euro22_rf_final <-
+  workflow() %>%
+  add_model(euro22_rf_best) %>%
+  add_recipe(euro22_rf_recipe) %>%
+  fit(data = euro22_train)
+
+euro22_rf_final
+```
+
+```{r}
+euro22_rf_final %>%
+  extract_fit_parsnip() %>%
+  vip(geom = "col", aesthetics = list(fill = "#add8e6"))
+```
+
+
+```{r}
+roundfive
+euro22 <- roundfive %>%
+  select(outcome, percentfirsttime:numshotassist) %>% mutate(outcome = ifelse(outcome == "Win", 1, 0))
+
+euro22
+# partition
+set.seed(47)
+euro22_split <- initial_split(euro22)
+euro22_train <- training(euro22_split)
+euro22_test <- testing(euro22_split)
+
+# recipe
+euro22_rf_recipe <-
+  recipe(outcome ~ . ,
+         data = euro22_train) %>%
+  step_mutate(outcome = as.factor(outcome)) 
+
+#model
+euro22_rf <- rand_forest(mtry = tune(),
+                           trees = tune()) %>%
+  set_engine("ranger", importance = "permutation") %>%
+  set_mode("classification")
+
+# workflow
+euro22_rf_wflow <- workflow() %>%
+  add_model(euro22_rf) %>%
+  add_recipe(euro22_rf_recipe)
+
+# CV
+set.seed(234)
+euro22_folds <- vfold_cv(euro22_train,
+                          v = 4)
+
+# parameters
+euro22_grid <- grid_regular(mtry(range = c(2,7)),
+                             trees(range = c(1,500)),
+                             levels = 5)
+
+# tune
+euro22_rf_tune <- 
+  euro22_rf_wflow %>%
+  tune_grid(resamples = euro22_folds,
+            grid = euro22_grid)
+
+euro22_rf_best <- finalize_model(euro22_rf, select_best(euro22_rf_tune, "accuracy"))
+
+euro22_rf_tune %>%
+  collect_metrics() %>%
+  filter(.metric == "accuracy") %>%
+  ggplot() + 
+  geom_line(aes(x = trees, y = mean, color = as.factor(mtry)))
+
+euro22_rf_final <-
+  workflow() %>%
+  add_model(euro22_rf_best) %>%
+  add_recipe(euro22_rf_recipe) %>%
+  fit(data = euro22_train)
+
+euro22_rf_final
+```
+```{r}
+euro22_rf_final %>%
+  extract_fit_parsnip() %>%
+  vip(geom = "col")
+```
