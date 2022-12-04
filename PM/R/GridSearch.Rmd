@@ -1,0 +1,24 @@
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+f <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/finalfeatures.csv")
+```
+
+```{r}
+colnames(features)
+```
+
+```{r}
+data <- f %>% select(c("team_id","team.name","away_team_name","outcome","percentfirsttime","percentshotassist","duration_perc","num_crosses","Total_shots","Ratio_of_Shots"))
+```
+
+
+
+
+
+
+
