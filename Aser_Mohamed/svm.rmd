@@ -7,44 +7,33 @@ output: html_document
 
 ```{r}
 library(e1071)
-```
-
-```{r}
 library(tidyverse)
 ```
 
 
 ```{r}
-data <- read.csv("combinedfeatures.csv" ,header = TRUE)
-data <- data %>% select(match_id, team_name, team_id, everything())
-data[,19] <- as.factor(data[,19])
-data
-```
+#reading data into a variable data2 from file "finalfeatures.csv" then iterating over every row to change the outcome to either "Win" or "not Win"
 
-```{r}
-data[1,19]
-```
-
-
-```{r}
 data2 <- read.csv("finalfeatures.csv" ,header = TRUE)
 
-data2
 for(i in 1:62) {
   if (data2[i,5] != "Win") {
     data2[i,5] = "not Win"
   }
 }
 data2[,5] <- as.factor(data2[,5])
-data2[1,5]
+
 ```
 
+
 ```{r}
-#set.seed(111111)
+# randomly putting each row in our data (match per team) into a training group and test group; 
+# the differect commented x variable assignments are just to see differences when we input different combinations of features into the SVM model
+
 sample <- sample(c(TRUE, FALSE), nrow(data), replace=TRUE, prob=c(0.7,0.3))
 data_train <- data2[sample,] 
 data_train
-data_test <- data2[!sample, ]
+data_test <- data2[!sample,]
 data_test
 
 #x=c(6:29)
@@ -55,7 +44,6 @@ x=c(8,10,12,14,15,20,21,26)
 dat = data.frame(data_train[, x], y = data_train[,5])
 dat
 svmfit = svm(y ~ ., data = dat, kernel = "linear",gamma = 0.5, cost = 4, scale = FALSE)
-#plot(svmfit,dat)
 
 
 test_data = data.frame(data_test[, x], y = data_test[,5])
@@ -64,7 +52,9 @@ mean(pred == data_test[,5])
 ```
 
 ```{r}
-#Taking the average accuracy over a thousand runs with randomized test and train groups
+#Taking the average accuracy over a thousand runs with randomized test and train groups each run
+#We store the accuracy of the SVM with the input used during that run in e vector "vec"
+#Finally, we use summary(vec) to get the results of 
 
 vec = c()
 for (i in 1:1000){
@@ -90,25 +80,9 @@ for (i in 1:1000){
   pred<- predict(svmfit, test_data)
   
   vec[i]=mean(pred == data_test[,5])
+  
 }
 
-```
-
-```{r}
-# for x=c(6:29), ALL FEATURES
-
 summary(vec)
+
 ```
-
-```{r}
-# for x=c(8,10,12,14,15,20,21,26) FEW FEATURES
-
-summary(vec)
-```
-```{r}
-# for x=c(8,10,15,21,26) FEWer FEATURES
-
-summary(vec)
-```
-
-
