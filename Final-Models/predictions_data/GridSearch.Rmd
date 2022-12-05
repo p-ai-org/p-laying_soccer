@@ -1,0 +1,114 @@
+
+
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+r1 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundone.csv")
+
+r2 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundtwo.csv")
+  
+r3 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundthree.csv")
+
+r4 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundfour.csv")
+
+r5 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundfive.csv")
+```
+
+```{r}
+colnames(r1)
+```
+
+```{r}
+r2.teams <- tail(r2$team.name,16)
+r2.teams
+```
+
+```{}
+team <- c()
+percentfirsttime <- c()
+duration_perc <- c()
+num_crosses <- c()
+Total_shots <- c()
+Ratio_of_Shots <- c()
+numshotassist <- c()
+r2_pred <- data.frame(teams, percentfirsttime, duration_perc, num_crosses, Total_shots, Ratio_of_Shots, numshotassist)
+```
+
+```{r}
+team <- c(0)
+v1 <- c(0)
+v2 <- c(0)
+v3 <- c(0)
+v4 <- c(0)
+v5 <- c(0)
+v6 <- c(0)
+r2.pred <- data.frame(team,v1,v2,v3,v4,v5,v6)
+```
+
+```{r}
+r1 <- r1 %>%
+  rename(v1=percentfirsttime,
+         v2=duration_perc, 
+         v3=num_crosses, 
+         v4=Total_shots, 
+         v5=Ratio_of_Shots, 
+         v6=numshotassist)
+colnames(r1)
+```
+```{r}
+v1.mean <- mean(r1$v1)
+v1.sd <- sd(r1$v1)
+v2.mean <- mean(r1$v2)
+v2.sd <- sd(r1$v2)
+v3.mean <- mean(r1$v3)
+v3.sd <- sd(r1$v3)
+v4.mean <- mean(r1$v4)
+v4.sd <- sd(r1$v4)
+v5.mean <- mean(r1$v5)
+v5.sd <- sd(r1$v5)
+v6.mean <- mean(r1$v6)
+v6.sd <- sd(r1$v6)
+```
+
+```{r}
+for(i in 1:length(r2.teams)){
+  team <- r2.teams[i]
+  v1 <- mean((r1%>%filter(team.name==team))$v1)
+  v2 <- mean((r1%>%filter(team.name==team))$v2)
+  v3 <- mean((r1%>%filter(team.name==team))$v3)
+  v4 <- mean((r1%>%filter(team.name==team))$v4)
+  v5 <- mean((r1%>%filter(team.name==team))$v5)
+  v6 <- mean((r1%>%filter(team.name==team))$v6)
+  assign(team,data.frame(v1,v2,v3,v4,v5,v6))
+  
+  v1s <- c()
+  v2s <- c()
+  v3s <- c()
+  v4s <- c()
+  v5s <- c()
+  v6s <- c()
+  for(j in 1:3){
+    v1s <- c(v1s,v1+j*v1.sd)
+    v1s <- c(v1s,v1-j*v1.sd)
+    v2s <- c(v2s,v2+j*v2.sd)
+    v2s <- c(v2s,v2-j*v2.sd)
+    v3s <- c(v3s,v3+j*v3.sd)
+    v3s <- c(v3s,v3-j*v3.sd)
+    v4s <- c(v4s,v4+j*v4.sd)
+    v4s <- c(v4s,v4-j*v4.sd)
+    v5s <- c(v5s,v5+j*v5.sd)
+    v5s <- c(v5s,v5-j*v5.sd)
+    v6s <- c(v6s,v6+j*v6.sd)
+    v6s <- c(v6s,v6-j*v6.sd)
+  }
+
+  grid <- expand.grid(v1s,v2s,v3s,v4s,v5s,v6s)
+}
+```
+
+
+
+
