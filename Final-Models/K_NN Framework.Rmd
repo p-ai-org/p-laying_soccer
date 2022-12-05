@@ -91,7 +91,7 @@ selectedIndices <- c(6:11) # indices of the columns of the relevant features; pl
 
 accuracyData <- c()
 bestK <- c()
-for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
 {
 
   
@@ -129,7 +129,7 @@ summary(bestK) # summary of the k at which the model achieves its best accuracy
 
 accuracyData <- c()
 bestK <- c()
-for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
 {
 
   
@@ -166,7 +166,7 @@ summary(bestK) # summary of the k at which the model achieves its best accuracy
 
 accuracyData <- c()
 bestK <- c()
-for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
 {
 
   
@@ -204,7 +204,7 @@ summary(bestK) # summary of the k at which the model achieves its best accuracy
 
 accuracyData <- c()
 bestK <- c()
-for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
 {
 
   
@@ -241,7 +241,7 @@ summary(bestK) # summary of the k at which the model achieves its best accuracy
 
 accuracyData <- c()
 bestK <- c()
-for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
 {
 
   
