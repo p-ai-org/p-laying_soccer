@@ -94,15 +94,17 @@ data_validation <- data_validationXX # replace XX with the number of the round a
   
 ACCURACY <- c()
 
-for(i in 1 : (nrow(data_train)/2) ) 
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
 {
-knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predicitons 
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predicitons, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
 ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
 
 ACCURACY[i] <- ACC
 }
 accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
 bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# this is the knn predicitons of the outcome at the best possible value of K
 }
 
 summary(accuracyData) # summary of the model accuracy
