@@ -19,6 +19,9 @@ library(class)
 ```
 
 
+##Note: you need to put the csv files with the predicted features in the data_test variables as shows in the comments below; the format of the csv file with the predicted features should be exactly the same as the other files roundone.csv, roundetwo.csv, ..etc but with the outcome column empty.
+
+#Reads the actual features and outcome of round one and the predicted features of round two 
 ```{r}
 #round one to predict round two
 data_train1 <- read.csv("roundone.csv") #read the previous round
@@ -28,13 +31,13 @@ data_test2  <- read.csv("roundtwo.csv") #reads predictions file (Here replace ro
 data_test2  <- data_test2[, -1] #just removes the automatic counter of rows
 
 data_validation2 <- read.csv("roundtwo.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
-data_validation2 <- data_validation2[, -1] #just removes the autmoatic counter of rows
+data_validation2 <- data_validation2[, -1] #just removes the automatic counter of rows
 ```
 
 
-
+#Reads the actual features and outcome of the first two round and the predicted features of round three 
 ```{r}
-#round two to predict round three
+#first two rounds to predict round three
 data_train2 <- read.csv("roundtwo.csv") #read the previous round
 data_train2 <- data_train2[,-1]
 
@@ -46,9 +49,9 @@ data_validation3 <- data_validation3[, -1]
 ```
 
 
-
+#Reads the actual features and outcome of the first three rounds and the predicted features of round four 
 ```{r}
-# round three to predict round four
+# first three rounds to predict round four
 data_train3 <- read.csv("roundthree.csv") #read the previous round
 data_train3 <- data_train3[,-1]
 
@@ -61,7 +64,7 @@ data_validation4 <- data_validation4[, -1]
 
 
 
-
+#Reads the actual features and outcome of the first four rounds and the predicted features of round five 
 ```{r}
 ## round four to predict round five
 data_train4 <- read.csv("roundfour.csv") #read the previous round
@@ -81,7 +84,11 @@ outcome <- 5 #index of the outcome column; please make sure it's the same in all
 selectedIndices <- c(6:11) # indices of the columns of the relevant features; please make sure it's the same in all datasets
 ```
 
+
+## For You to Test
 ```{r}
+## this code chunk is for you to test the framework after adding the predictions data
+
 accuracyData <- c()
 bestK <- c()
 for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
@@ -113,4 +120,155 @@ knn_outcome_predictions #displays the KNN predictions of the outcome
 summary(accuracyData) # summary of the model accuracy
 summary(bestK) # summary of the k at which the model achieves its best accuracy
 ```
+
+
+
+## Round Two Predictions
+```{r}
+## predicts the outcome of the second round based on the data of the first round
+
+accuracyData <- c()
+bestK <- c()
+for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_train1 
+data_test <- data_test2 
+data_validation <- data_validation2 
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions_2 <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions_2 #displays the KNN predictions of the outcome of the second round
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
+
+## Round Three Predictions
+```{r}
+## predicts the outcome of the third round based on the data of the first two rounds
+
+accuracyData <- c()
+bestK <- c()
+for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_train2 
+data_test <- data_test3
+data_validation <- data_validation3 
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions_3 <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions_3 #displays the KNN predictions of the outcome of the third round
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
+
+
+## Round Four Predictions
+```{r}
+## predicts the outcome of the fourth round based on the data of the first three rounds
+
+accuracyData <- c()
+bestK <- c()
+for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_train3 
+data_test <- data_test4
+data_validation <- data_validation4 
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions_4 <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions_4 #displays the KNN predictions of the outcome of the fourth round  
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
+
+## Round Five Predictions
+```{r}
+## predicts the outcome of the fifth round based on the data of the first four rounds
+
+accuracyData <- c()
+bestK <- c()
+for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_train4 
+data_test <- data_test5
+data_validation <- data_validation5
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions_5 <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions_5 #displays the KNN predictions of the outcome of the fifth round
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
 
