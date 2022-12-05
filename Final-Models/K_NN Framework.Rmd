@@ -1,0 +1,116 @@
+---
+title: "K-NN Framework"
+output: html_document
+date: "2022-11-20"
+---
+
+```{r}
+install.packages(c("ggplot2", "ggpubr", "tidyverse", "broom", "AICcmodavg", "caret", "class"))
+```
+
+```{r}
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(broom)
+library(AICcmodavg)
+library(caret)
+library(class)
+```
+
+
+```{r}
+#round one to predict round two
+data_train1 <- read.csv("roundone.csv") #read the previous round
+data_train1 <- data_train1[,-1] #just removes the automatic counter of rows
+
+data_test2  <- read.csv("roundtwo.csv") #reads predictions file (Here replace roundtwo.csv with the new data with the predictions)
+data_test2  <- data_test2[, -1] #just removes the automatic counter of rows
+
+data_validation2 <- read.csv("roundtwo.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
+data_validation2 <- data_validation2[, -1] #just removes the autmoatic counter of rows
+```
+
+
+
+```{r}
+#round two to predict round three
+data_train2 <- read.csv("roundtwo.csv") #read the previous round
+data_train2 <- data_train2[,-1]
+
+data_test3  <- read.csv("roundthree.csv") #reads predictions file (Here replace roundthree.csv with the new data with the predictions)
+data_test3  <- data_test3[, -1]
+
+data_validation3 <- read.csv("roundthree.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
+data_validation3 <- data_validation3[, -1]
+```
+
+
+
+```{r}
+# round three to predict round four
+data_train3 <- read.csv("roundthree.csv") #read the previous round
+data_train3 <- data_train3[,-1]
+
+data_test4  <- read.csv("roundfour.csv") #reads predictions file (Here replace roundfour.csv with the new data with the predictions)
+data_test4  <- data_test4[, -1]
+
+data_validation4 <- read.csv("roundfour.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
+data_validation4 <- data_validation4[, -1]
+```
+
+
+
+
+```{r}
+## round four to predict round five
+data_train4 <- read.csv("roundfour.csv") #read the previous round
+data_train4 <- data_train4[,-1]
+
+data_test5  <- read.csv("roundfive.csv") #reads predictions file (Here replace roundfive.csv with the new data with the predictions) 
+data_test5  <- data_test5[, -1]
+
+data_validation5 <- read.csv("roundfive.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
+data_validation5 <- data_validation5[, -1]
+```
+
+
+
+```{r}
+outcome <- 5 #index of the outcome column; please make sure it's the same in all datasets
+selectedIndices <- c(6:11) # indices of the columns of the relevant features; please make sure it's the same in all datasets
+```
+
+```{r}
+accuracyData <- c()
+bestK <- c()
+for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_trainXX # replace XX with the number of the round you are using its data to predict the next round; for instance, if you are using the first round, write data_train <- data_train1
+data_test <- data_testXX # replace XX with the number of the round you are trying to predict its results; for instance, if you are using the first round to predict the second round, write data_test <- data_test2
+data_validation <- data_validationXX # replace XX with the number of the round you are trying to predict its results; for instance, if you are using the first round to predict the second round, write data_validation <- data_validation2
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions #displays the KNN predictions of the outcome 
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
