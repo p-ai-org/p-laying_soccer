@@ -88,9 +88,9 @@ for(j in 1:10000) # run it 1000 times instead of picking a seed to see how the m
 {
 
   
-data_train <- data_train1 # replace XX with the number of the round after data_train; for instance, if you are using the first round, write data_train <- data_train1
-data_test <- data_test2 # replace XX with the number of the round after data_set; for instance, if you are using the first round to predict the second round, write data_test <- data_test2
-data_validation <- data_validation2 # replace XX with the number of the round after data_validation; for instance, if you are using the first round to predict the second round, write data_validation <- data_validation2
+data_train <- data_trainXX # replace XX with the number of the round after data_train; for instance, if you are using the first round, write data_train <- data_train1
+data_test <- data_testXX # replace XX with the number of the round after data_set; for instance, if you are using the first round to predict the second round, write data_test <- data_test2
+data_validation <- data_validationXX # replace XX with the number of the round after data_validation; for instance, if you are using the first round to predict the second round, write data_validation <- data_validation2
   
 ACCURACY <- c()
 
