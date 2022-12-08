@@ -1,0 +1,56 @@
+---
+title: "syntheticdata"
+output: html_document
+date: '2022-12-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(StatsBombR)
+library(ggplot2)
+library(grid)
+```
+
+## R Markdown
+
+Data for England vs. Germany (final)
+
+```{r}
+# reading and filtering data
+game_data <- read.csv("roundfive.csv")
+
+germany = game_data %>%
+  filter(team.name == "Germany Women's") 
+england = game_data %>%
+  filter(team.name == "England Women's")
+```
+
+```{r}
+germany
+england
+```
+
+```{r} 
+# getting means of 6 features for germany from first 5 games
+mean_features_ger <- c(mean(germany$percentfirsttime), mean(germany$duration_perc), mean(germany$num_crosses), mean(germany$Total_shots), mean(germany$Ratio_of_Shots), mean(germany$numshotassist))
+mean_features_ger
+```
+```{r}
+# getting sd of 6 features for germany from first 5 games
+sd_features_ger <- c(sd(germany$percentfirsttime), sd(germany$duration_perc), sd(germany$num_crosses), sd(germany$Total_shots), sd(germany$Ratio_of_Shots), sd(germany$numshotassist))
+sd_features_ger
+```
+
+
+```{r}
+# getting means of 6 features for england from first 5 games
+mean_features_eng <- c("Means", mean(england$percentfirsttime), mean(england$duration_perc), mean(england$num_crosses), mean(england$Total_shots), mean(england$Ratio_of_Shots), mean(england$numshotassist))
+mean_features_eng
+```
+
+```{r}
+# getting sds of 6 features for england from first 5 games
+sd_features_eng <- c("SD", sd(england$percentfirsttime), sd(england$duration_perc), sd(england$num_crosses), sd(england$Total_shots), sd(england$Ratio_of_Shots), sd(england$numshotassist))
+sd_features_eng
+```
