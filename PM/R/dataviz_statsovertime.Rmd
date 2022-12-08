@@ -1,0 +1,68 @@
+---
+title: "data_viz"
+output: html_document
+date: '2022-12-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(StatsBombR)
+library(ggplot2)
+library(grid)
+```
+
+
+```{r cars}
+game_data <- read.csv("/Users/taylorvenenciano/Desktop/allrounds.csv")
+game_data
+
+top8 = game_data %>%
+  filter(team.name == "Germany Women's" | team.name == "England Women's" | team.name == "Spain Women's" | team.name == "Sweden Women's" | team.name == "Belgium Women's" | team.name == "Austria Women's" | team.name == "France Women's" | team.name == "Netherlands Women's")
+```
+
+```{r}
+# graph for first touch shot
+ggplot(data = top8,aes(Numgame, percentfirsttime, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE)
+```
+```{r}
+# graph for possession
+ggplot(data = top8, aes(Numgame, duration_perc, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE) +
+  labs(y = "Possession %", x = "Match Number", title = "Possession % vs. Match Number")
+```
+```{r}
+# graph for crosses
+ggplot(data = top8, aes(Numgame, num_crosses, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE) +
+  labs(y = "Crosses", x = "Match Number")
+```
+
+```{r}
+# graph for shots
+ggplot(data = top8, aes(Numgame, Total_shots, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE) +
+  labs(y = "Shots", x = "Match Number")
+```
+
+```{r}
+# graph for ratio of shots
+ggplot(data = top8, aes(Numgame, Ratio_of_Shots, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE)
+```
+
+```{r}
+# graph for pass assist
+ggplot(data = top8, aes(Numgame, numshotassist, color = team.name)) +
+  geom_point() +
+  geom_smooth(method='lm', se = FALSE)
+```
+
+
+
