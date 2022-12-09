@@ -3,6 +3,7 @@
 ```{r}
 library(tidyverse)
 library(dplyr)
+library(ggplot2)
 ```
 
 ```{r}
@@ -14,100 +15,248 @@ r3 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/
 
 r4 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundfour.csv")
 
-r5 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundfive.csv")
+r53 <- read.csv("https://raw.githubusercontent.com/p-ai-org/p-laying_soccer/main/Final-Models/data/roundfive.csv")
 ```
 
 ```{r}
-colnames(r1)
+eng_final <- r53 %>%
+  filter(team_id == 865)
+eng_final <- cbind(match_num=c(1,2,3,4,5),eng_final)
+eng_pred <- eng_final[1,]
+
+ger_final <- r53 %>%
+  filter(team_id == 857)
+ger_final <- cbind(match_num=c(1,2,3,4,5),ger_final)
+ger_pred <- ger_final[1,]
 ```
 
 ```{r}
-r2.teams <- tail(r2$team.name,16)
-r2.teams
+eng_final
+ger_final
 ```
+```{r}
+plot(eng_final$match_num,eng_final$percentfirsttime)
+abline(lm(eng_final$percentfirsttime ~ eng_final$match_num))
 
-```{}
-team <- c()
-percentfirsttime <- c()
-duration_perc <- c()
-num_crosses <- c()
-Total_shots <- c()
-Ratio_of_Shots <- c()
-numshotassist <- c()
-r2_pred <- data.frame(teams, percentfirsttime, duration_perc, num_crosses, Total_shots, Ratio_of_Shots, numshotassist)
+y <- eng_final$percentfirsttime
+x <- eng_final$match_num
+eng_pred[1,8] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+eng_pred[1,8]
 ```
 
 ```{r}
-team <- c(0)
-v1 <- c(0)
-v2 <- c(0)
-v3 <- c(0)
-v4 <- c(0)
-v5 <- c(0)
-v6 <- c(0)
-r2.pred <- data.frame(team,v1,v2,v3,v4,v5,v6)
+plot(eng_final$match_num,eng_final$duration_perc)
+abline(lm(eng_final$duration_perc ~ eng_final$match_num))
+
+y <- eng_final$duration_perc
+x <- eng_final$match_num
+eng_pred[1,9] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
 ```
 
 ```{r}
-r1 <- r1 %>%
-  rename(v1=percentfirsttime,
-         v2=duration_perc, 
-         v3=num_crosses, 
-         v4=Total_shots, 
-         v5=Ratio_of_Shots, 
-         v6=numshotassist)
-colnames(r1)
-```
-```{r}
-v1.mean <- mean(r1$v1)
-v1.sd <- sd(r1$v1)
-v2.mean <- mean(r1$v2)
-v2.sd <- sd(r1$v2)
-v3.mean <- mean(r1$v3)
-v3.sd <- sd(r1$v3)
-v4.mean <- mean(r1$v4)
-v4.sd <- sd(r1$v4)
-v5.mean <- mean(r1$v5)
-v5.sd <- sd(r1$v5)
-v6.mean <- mean(r1$v6)
-v6.sd <- sd(r1$v6)
+plot(eng_final$match_num,eng_final$num_crosses)
+abline(lm(eng_final$num_crosses ~ eng_final$match_num))
+
+y <- eng_final$num_crosses
+x <- eng_final$match_num
+eng_pred[1,10] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+eng_pred[1,10]
 ```
 
 ```{r}
-for(i in 1:length(r2.teams)){
-  team <- r2.teams[i]
-  v1 <- mean((r1%>%filter(team.name==team))$v1)
-  v2 <- mean((r1%>%filter(team.name==team))$v2)
-  v3 <- mean((r1%>%filter(team.name==team))$v3)
-  v4 <- mean((r1%>%filter(team.name==team))$v4)
-  v5 <- mean((r1%>%filter(team.name==team))$v5)
-  v6 <- mean((r1%>%filter(team.name==team))$v6)
-  assign(team,data.frame(v1,v2,v3,v4,v5,v6))
-  
-  v1s <- c()
-  v2s <- c()
-  v3s <- c()
-  v4s <- c()
-  v5s <- c()
-  v6s <- c()
-  for(j in 1:3){
-    v1s <- c(v1s,v1+j*v1.sd)
-    v1s <- c(v1s,v1-j*v1.sd)
-    v2s <- c(v2s,v2+j*v2.sd)
-    v2s <- c(v2s,v2-j*v2.sd)
-    v3s <- c(v3s,v3+j*v3.sd)
-    v3s <- c(v3s,v3-j*v3.sd)
-    v4s <- c(v4s,v4+j*v4.sd)
-    v4s <- c(v4s,v4-j*v4.sd)
-    v5s <- c(v5s,v5+j*v5.sd)
-    v5s <- c(v5s,v5-j*v5.sd)
-    v6s <- c(v6s,v6+j*v6.sd)
-    v6s <- c(v6s,v6-j*v6.sd)
-  }
+plot(eng_final$match_num,eng_final$Total_shots)
+abline(lm(eng_final$Total_shots ~ eng_final$match_num))
 
-  grid <- expand.grid(v1s,v2s,v3s,v4s,v5s,v6s)
+y <- eng_final$Total_shots
+x <- eng_final$match_num
+eng_pred[1,11] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+eng_pred[1,11]
+```
+```{r}
+plot(eng_final$match_num,eng_final$Ratio_of_Shots)
+abline(lm(eng_final$Ratio_of_Shots ~ eng_final$match_num))
+
+y <- eng_final$Ratio_of_Shots
+x <- eng_final$match_num
+eng_pred[1,12] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+eng_pred[1,12]
+```
+```{r}
+plot(eng_final$match_num,eng_final$numshotassist)
+abline(lm(eng_final$numshotassist ~ eng_final$match_num))
+
+y <- eng_final$numshotassist
+x <- eng_final$match_num
+eng_pred[1,13] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+eng_pred[1,13]
+```
+
+```{r}
+eng_pred[,7:13]
+```
+
+```{r}
+y <- ger_final$percentfirsttime
+x <- ger_final$match_num
+ger_pred[1,8] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,8]
+y <- ger_final$duration_perc
+x <- ger_final$match_num
+ger_pred[1,9] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,9]
+y <- ger_final$num_crosses
+x <- ger_final$match_num
+ger_pred[1,10] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,10]
+y <- ger_final$Total_shots
+x <- ger_final$match_num
+ger_pred[1,11] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,11]
+y <- ger_final$Ratio_of_Shots
+x <- ger_final$match_num
+ger_pred[1,12] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,12]
+y <- ger_final$numshotassist
+x <- ger_final$match_num
+ger_pred[1,13] <- predict(lm(y ~ x), newdata=data.frame(x=c(6)))
+ger_pred[1,13]
+```
+
+```{r}
+new <- rbind(eng_pred[,7:13],ger_pred[,7:13])
+new
+
+new[2,1] <- "Loss"
+new
+
+new[1,3] <- new[1,3]/(new[1,3]+new[2,3])
+new[2,3] <- 1-new[1,3]
+new
+
+new[1,4] <- round(new[1,4])
+new[2,4] <- round(new[2,4])
+new
+
+new[1,5] <- round(new[1,5])
+new[2,5] <- round(new[2,5])
+new
+
+new[1,6] <- new[1,5]/new[2,5]
+new[2,6] <- 1/new[1,6]
+new
+
+new[1,7] <- round(new[1,7])
+new[2,7] <- round(new[2,7])
+new
+```
+
+```{r}
+actual <- actualfinalmatch
+actual <- actual %>% 
+  select(-team.name,-outcome)
+actual <- cbind(outcome=c("Win","Loss"),actual)
+actual
+pred_stats <- rbind(actual,new)
+pred_stats <- rbind(pred_stats,list("Loss",.3,0.5,20,1,.5,2))
+pred_stats
+```
+
+```{r}
+pred_stats[3:4,]
+```
+
+```{r}
+eng <- r5_rf_final %>%
+  predict(new_data = eng.df) %>%
+  cbind(eng.df)
+
+count.eng <- 0
+for(i in 1:length(eng.df[,1])){
+  if(eng[i,1]=="Win") count.eng <- count.eng+1
 }
+count.eng
 ```
+
+```{R}
+eng <- new[1,]
+l1 <- c(new[1,2]-.15*new[1,2],new[1,2],new[1,2]+.15*new[1,2])
+l2 <- c(new[1,3]-.15*new[1,3],new[1,3],new[1,3]+.15*new[1,3])
+l3 <- c(round(new[1,4]-.15*new[1,4]),new[1,4],round(new[1,4]+.15*new[1,4]))
+l4 <- c(round(new[1,5]-.15*new[1,5]),new[1,5],round(new[1,5]+.15*new[1,5]))
+l5 <- c(new[1,6]-.15*new[1,6],new[1,6],new[1,6]+.15*new[1,6])
+l6 <- c(round(new[1,7]-.15*new[1,7]),new[1,7],round(new[1,7]+.15*new[1,7]))
+```
+
+```{R}
+eng <- new[1,]
+l1 <- c(new[1,2]-.1*new[1,2],new[1,2],new[1,2]+.1*new[1,2])
+l2 <- c(new[1,3]-.1*new[1,3],new[1,3],new[1,3]+.1*new[1,3])
+l3 <- c(round(new[1,4]-.1*new[1,4]),new[1,4],round(new[1,4]+.1*new[1,4]))
+l4 <- c(round(new[1,5]-.1*new[1,5]),new[1,5],round(new[1,5]+.1*new[1,5]))
+l5 <- c(new[1,6]-.1*new[1,6],new[1,6],new[1,6]+.1*new[1,6])
+l6 <- c(round(new[1,7]-.1*new[1,7]),new[1,7],round(new[1,7]+.1*new[1,7]))
+```
+
+```{r}
+eng.df <- expand.grid(l1,l2,l3,l4,l5,l6)
+eng.df <- cbind(outcome=rep("Win",length(eng.df[,1])),eng.df)
+eng.df <- eng.df %>%
+  rename(
+    percentfirsttime=Var1,
+    duration_perc=Var2,
+    num_crosses=Var3,
+    Total_shots=Var4,
+    Ratio_of_Shots=Var5,
+    numshotassist=Var6
+  )
+```
+
+```{r}
+l1 <- c(new[2,2]-.15*new[2,2],new[2,2],new[2,2]+.15*new[2,2])
+l2 <- c(new[2,3]-.15*new[2,3],new[2,3],new[2,3]+.15*new[2,3])
+l3 <- c(round(new[2,4]-.15*new[2,4]),new[2,4],round(new[2,4]+.15*new[2,4]))
+l4 <- c(round(new[2,5]-.15*new[2,5]),new[2,5],round(new[2,5]+.15*new[2,5]))
+l5 <- c(new[2,6]-.15*new[2,6],new[2,6],new[2,6]+.15*new[2,6])
+l6 <- c(round(new[2,7]-.15*new[2,7]),new[2,7],round(new[2,7]+.15*new[2,7]))
+```
+
+```{r}
+l1 <- c(new[2,2]-.1*new[2,2],new[2,2],new[2,2]+.15*new[2,2])
+l2 <- c(new[2,3]-.1*new[2,3],new[2,3],new[2,3]+.15*new[2,3])
+l3 <- c(round(new[2,4]-.15*new[2,4]),new[2,4],round(new[2,4]+.15*new[2,4]))
+l4 <- c(round(new[2,5]-.15*new[2,5]),new[2,5],round(new[2,5]+.15*new[2,5]))
+l5 <- c(new[2,6]-.15*new[2,6],new[2,6],new[2,6]+.15*new[2,6])
+l6 <- c(round(new[2,7]-.15*new[2,7]),new[2,7],round(new[2,7]+.15*new[2,7]))
+```
+
+```{r}
+ger.df <- expand.grid(l1,l2,l3,l4,l5,l6)
+ger.df <- cbind(outcome=rep("Win",length(ger.df[,1])),ger.df)
+ger.df <- ger.df %>%
+  rename(
+    percentfirsttime=Var1,
+    duration_perc=Var2,
+    num_crosses=Var3,
+    Total_shots=Var4,
+    Ratio_of_Shots=Var5,
+    numshotassist=Var6
+  )
+```
+
+
+```{r}
+ger <- r5_rf_final %>%
+  predict(new_data = ger.df) %>%
+  cbind(ger.df)
+
+count.ger <- 0
+for(i in 1:length(ger.df[,1])){
+  if(ger[i,1]=="Win") count.ger <- count.ger+1
+}
+count.ger
+```
+
+
 
 
 

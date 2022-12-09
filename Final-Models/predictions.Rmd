@@ -1,0 +1,158 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.align = "center")
+options(digits=5, pillar.sigfig = 7)
+library(dplyr)
+library(StatsBombR)
+library(ggplot2)
+
+library(tidyverse)
+library(tidymodels)
+library(readr)
+```
+
+```{r}
+r5 <- read_csv("data/roundfive.csv", 
+    col_types = cols(X1 = col_integer(), 
+        team_id = col_integer(), match_id = col_integer(), num_crosses = col_integer(), 
+        Total_shots = col_integer(), numshotassist = col_integer())) %>%
+  mutate(outcome = as.factor(outcome)) %>%
+  select(-"...1", -team_id, -match_id, -team.name, -away_team_name)
+```
+
+```{r}
+set.seed(4747)
+
+# recipe
+euro22_recipe <-
+  recipe(outcome ~ ., data = r5) 
+
+# model
+euro22_rf <- rand_forest(mtry = tune(), trees = tune()) %>%
+  set_engine('ranger', importance = 'permutation') %>%
+  set_mode('classification')
+
+# workflow
+euro22_rf_wflow <- workflow() %>%
+  add_model(euro22_rf) %>%
+  add_recipe(euro22_recipe)
+
+# CV
+set.seed(47)
+euro22_vfold <- vfold_cv(r5, v=4)
+
+# param
+rf_grid <- grid_regular(mtry(range = c(1,6)),
+                         trees(range = c(1, 401)),
+                         levels = c(10, 9))
+
+# tuning
+euro22_rf_tuned <- euro22_rf_wflow %>%
+  tune_grid(resamples = euro22_vfold, 
+           grid = rf_grid)
+
+# plot
+euro22_rf_tuned %>%
+  autoplot()
+
+euro22_rf_best <- finalize_model(
+  euro22_rf,
+  select_best(euro22_rf_tuned, 'accuracy')
+)
+euro22_rf_best
+```
+> The best model on Round 5 at this seed has parameters `mtry=1` and `trees=101`.
+
+```{r}
+set.seed(4747)
+r5_rf_final <-
+  workflow() %>%
+  add_model(euro22_rf_best) %>%
+  add_recipe(euro22_recipe) %>%
+  fit(data = r5)
+
+# predict on own data
+r5_rf_final %>%
+  predict(new_data = r5) %>%
+  cbind(r5) %>%
+  summarize(accuracy = mean(.pred_class == outcome))
+```
+```{r}
+new <- eng_pred[,7:13]
+new[1,4] <- 14
+new[1,5] <- 15
+new[1,7] <- 10
+new
+```
+
+```{r}
+r5_rf_final %>%
+  predict(new_data = pred_stats) %>%
+  cbind(pred_stats)
+```
+
+
+```{r}
+## round four to predict round five
+data_train4 <- read.csv("data/roundfour.csv") #read the previous round
+data_train4 <- data_train4[,-1]
+
+data_test5  <- read.csv("data/roundfive.csv") #reads predictions file (Here replace roundfive.csv with the new data with the predictions) 
+data_test5  <- data_test5[, -1]
+
+data_validation5 <- read.csv("data/roundfive.csv") #reads the actual data of the round we want to predict; this file serves only for accuracy calculation purposes. It is not used in calculating the predictions
+data_validation5 <- data_validation5[, -1]
+```
+
+```{r}
+outcome <- 5 #index of the outcome column; please make sure it's the same in all datasets
+selectedIndices <- c(6:11) # indices of the columns of the relevant features; please make sure it's the same in all datasets
+```
+
+```{r}
+ppp <- pred_stats
+ppp
+
+for(i in 1:4){
+  ppp <- cbind(f=c(0,0,0,0,0),ppp)
+}
+ppp
+```
+
+```{r}
+## predicts the outcome of the fifth round based on the data of the first four rounds
+
+accuracyData <- c()
+bestK <- c()
+for(j in 1:1000) # run it 1000 times instead of picking a seed to see how the model actually perform with different seeds
+{
+
+  
+data_train <- data_train4 
+data_test <- ppp
+data_validation <- data_validation5
+  
+ACCURACY <- c()
+
+for(i in 1 : (nrow(data_train)/2) ) #tries with all possible values for k
+{
+knn <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= i) #calcualtes the predictions, so the knn variable has the  predicitions of the outcome; however, note that knn is modified with every run in the loop.
+ACC <- 100 * sum(data_validation[, outcome]== knn)/NROW(data_validation[, outcome]) # calculates the accuracy of the model
+
+ACCURACY[i] <- ACC
+}
+accuracyData[j] <- max(ACCURACY) #stores the best accuracy of the model 
+bestK[j] <- which.max(ACCURACY) # stores the k at which the model achieved its best accuracy
+
+knn_outcome_predictions_5 <- class::knn(train= data_train[, selectedIndices], test = data_test[, selectedIndices], cl= data_train[, outcome], k= bestK[j])# these are the KNN predictions of the outcome at the best possible value of K
+
+}
+
+knn_outcome_predictions_5 #displays the KNN predictions of the outcome of the fifth round
+
+summary(accuracyData) # summary of the model accuracy
+summary(bestK) # summary of the k at which the model achieves its best accuracy
+```
+
+
+
